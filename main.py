@@ -2,9 +2,6 @@ import os
 
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
-from selenium.common import exceptions
-from pynput import keyboard
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -15,9 +12,11 @@ from random import randint
 import csv
 
 driver = webdriver.Chrome(ChromeDriverManager().install())
-categories_file = open("categories", "r")
+categories_file = open("ozon_categories", "r")
 category_index = 0
 for category_id in categories_file:
+    print(f"Category {category_index} done!")
+    category_index += 1
     category_id = category_id.strip()
     file_path = f'ozon/{category_id}.csv'
     try:
@@ -37,7 +36,7 @@ for category_id in categories_file:
         continue
     while True:
         try:
-            WebDriverWait(driver, 3).until(expected_conditions.presence_of_element_located((By.CLASS_NAME, "y5s")))
+            WebDriverWait(driver, 3).until(expected_conditions.presence_of_element_located((By.CLASS_NAME, "ui-n7")))
             if randint(0, 10) == 0:
                 time.sleep(0.5 + random())
             if randint(0, 10) == 0:
@@ -50,21 +49,33 @@ for category_id in categories_file:
                 price = card.find_element(By.CLASS_NAME, "ui-s2").find_element(By.CLASS_NAME, "ui-s5").text
                 link = card.find_element(By.CLASS_NAME, "tile-hover-target").get_attribute("href")
                 name = card.find_element(By.CLASS_NAME, "tile-hover-target").find_element(By.CLASS_NAME, "de0").text
-                reviews = card.find_element(By.CLASS_NAME, "ni6").find_element(By.TAG_NAME, "a").text
-                seller = card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_element(
-                    By.TAG_NAME, "span").text
+                try:
+                    reviews = card.find_element(By.CLASS_NAME, "ni6").find_element(By.TAG_NAME, "a").text
+                except Exception as e:
+                    reviews = 0
+                try:
+                    seller = card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_element(
+                        By.TAG_NAME, "span").text
+                except Exception as e:
+                    seller = "null"
                 csv_writer.writerow([name, str(price), reviews, seller, link])
                 any_row = True
             for card in driver.find_elements(By.CLASS_NAME, "p3i"):
                 price = card.find_element(By.CLASS_NAME, "p4i").find_element(By.CLASS_NAME, "ui-s5").text
                 link = card.find_element(By.CLASS_NAME, "tile-hover-target").get_attribute("href")
-                reviews = card.find_element(By.CLASS_NAME, "yc5").text
+                try:
+                    reviews = card.find_element(By.CLASS_NAME, "yc5").text
+                except Exception as e:
+                    reviews = 0
                 name = card.find_element(By.CLASS_NAME, "pi4").find_element(By.CLASS_NAME, "i5p").find_element(
                     By.CLASS_NAME, "tile-hover-target").find_element(By.CLASS_NAME, "de0").text
-                seller = \
-                card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_elements(By.TAG_NAME,
-                                                                                                         "span")[
-                    -1].text
+                try:
+                    seller = \
+                    card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_elements(By.TAG_NAME,
+                                                                                                             "span")[
+                        -1].text
+                except Exception as e:
+                    seller = "null"
                 csv_writer.writerow([name, str(price), reviews, seller, link])
                 any_row = True
         except Exception as e:
@@ -85,6 +96,4 @@ for category_id in categories_file:
             os.remove(file_path)
     except Exception as e:
         print(f"Can't close file: {e} in {category_id}")
-    print(f"Category {category_index} done!")
-    category_index += 1
 print("Success!")
