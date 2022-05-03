@@ -20,13 +20,6 @@ for category_id in categories_file:
     category_id = category_id.strip()
     file_path = f'ozon/{category_id}.csv'
     try:
-        driver.get(
-            f"https://www.ozon.ru/category/{category_id}/?price=0.000%3B1000.000&reviews_count=0.000%3B200.000")
-    except Exception as e:
-        print(f"Web-page opening: {e} in {category_id}")
-        continue
-    any_row = False
-    try:
         if os.path.exists(file_path):
             continue
         csv_file = open(file_path, 'w', newline='', encoding='utf-8')
@@ -34,6 +27,13 @@ for category_id in categories_file:
     except Exception as e:
         print(f"File opening: {e} in {category_id}")
         continue
+    try:
+        driver.get(
+            f"https://www.ozon.ru/category/{category_id}/?price=0.000%3B1000.000&reviews_count=0.000%3B200.000")
+    except Exception as e:
+        print(f"Web-page opening: {e} in {category_id}")
+        continue
+    any_row = False
     while True:
         try:
             WebDriverWait(driver, 3).until(expected_conditions.presence_of_element_located((By.CLASS_NAME, "ui-n7")))
@@ -41,6 +41,9 @@ for category_id in categories_file:
                 time.sleep(0.5 + random())
             if randint(0, 10) == 0:
                 driver.execute_script(f"window.scrollBy(0,{randint(500, 1000)});")
+        except TimeoutException as e:
+            # nothing fount
+            break
         except Exception as e:
             print(f"Waiting: {e} in {category_id}")
             break
