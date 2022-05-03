@@ -51,7 +51,9 @@ for category_id in categories_file:
                 link = card.find_element(By.CLASS_NAME, "tile-hover-target").get_attribute("href")
                 name = card.find_element(By.CLASS_NAME, "tile-hover-target").find_element(By.CLASS_NAME, "de0").text
                 reviews = card.find_element(By.CLASS_NAME, "ni6").find_element(By.TAG_NAME, "a").text
-                csv_writer.writerow([name, str(price), reviews, link])
+                seller = card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_element(
+                    By.TAG_NAME, "span").text
+                csv_writer.writerow([name, str(price), reviews, seller, link])
                 any_row = True
             for card in driver.find_elements(By.CLASS_NAME, "p3i"):
                 price = card.find_element(By.CLASS_NAME, "p4i").find_element(By.CLASS_NAME, "ui-s5").text
@@ -59,7 +61,11 @@ for category_id in categories_file:
                 reviews = card.find_element(By.CLASS_NAME, "yc5").text
                 name = card.find_element(By.CLASS_NAME, "pi4").find_element(By.CLASS_NAME, "i5p").find_element(
                     By.CLASS_NAME, "tile-hover-target").find_element(By.CLASS_NAME, "de0").text
-                csv_writer.writerow([name, str(price), reviews, link])
+                seller = \
+                card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_elements(By.TAG_NAME,
+                                                                                                         "span")[
+                    -1].text
+                csv_writer.writerow([name, str(price), reviews, seller, link])
                 any_row = True
         except Exception as e:
             print(f"Parsing: {e} in {category_id}")
