@@ -25,13 +25,6 @@ for category_id in categories_file:
     category_id = category_id.strip()
     file_path = f'wb/{category_id.replace("/", "_")}.csv'
     try:
-        driver.get(
-            f"https://www.wildberries.ru/catalog/{category_id}/?priceU=0%3B100000")
-    except Exception as e:
-        print(f"Web-page opening: {e} in {category_id}")
-        continue
-    any_row = False
-    try:
         if os.path.exists(file_path):
             continue
         csv_file = open(file_path, 'w', newline='', encoding='utf-8')
@@ -39,6 +32,13 @@ for category_id in categories_file:
     except Exception as e:
         print(f"File opening: {e} in {category_id}")
         continue
+    try:
+        driver.get(
+            f"https://www.wildberries.ru/catalog/{category_id}/?priceU=0%3B100000")
+    except Exception as e:
+        print(f"Web-page opening: {e} in {category_id}")
+        continue
+    any_row = False
     while True:
         try:
             WebDriverWait(driver, 3).until(
@@ -51,23 +51,38 @@ for category_id in categories_file:
             print(f"Waiting: {e} in {category_id}")
             break
         try:
+            not_less_1000 = False
             for card in driver.find_elements(By.CLASS_NAME, "product-card__wrapper"):
                 card.click()
                 WebDriverWait(driver, 3).until(
                     expected_conditions.presence_of_element_located((By.CLASS_NAME, "price-block__final-price")))
-                price = card.find_element(By.CLASS_NAME, "price-block__final-price").text
+                price = int(card.find_element(By.CLASS_NAME, "price-block__final-price").text)
                 link = driver.current_url
                 name = card.find_element(By.CLASS_NAME, "same-part-kt__header").text
-                reviews = hard_to_int(card.find_element(By.CLASS_NAME, "same-part-kt__count-review").text)
-                bought = hard_to_int(card.find_element(By.CLASS_NAME, "same-part-kt__order-quantity").text)
-                seller = card.find_element(By.CLASS_NAME, "seller-details__title-wrap").find_element(By.TAG_NAME,
-                                                                                                     "a").text
+                try:
+                    reviews = hard_to_int(card.find_element(By.CLASS_NAME, "same-part-kt__count-review").text)
+                except Exception as e:
+                    reviews = 0
+                try:
+                    bought = hard_to_int(card.find_element(By.CLASS_NAME, "same-part-kt__order-quantity").text)
+                except Exception as e:
+                    bought = 0
+                try:
+                    seller = card.find_element(By.CLASS_NAME, "seller-details__title-wrap").find_element(By.TAG_NAME,
+                                                                                                         "a").text
+                except Exception as e:
+                    seller = "null"
+                if price > 1000:
+                    not_less_1000 = True
+                    break
                 if reviews <= 200 and bought <= 2000:
                     csv_writer.writerow([name, price, reviews, bought, seller, link])
                     any_row = True
                 driver.execute_script("window.history.go(-1)")
         except Exception as e:
             print(f"Parsing: {e} in {category_id}")
+            break
+        if not_less_1000:
             break
         try:
             item = WebDriverWait(driver, 3).until(
