@@ -25,13 +25,6 @@ for category_id in categories_file:
     category_id = category_id.strip()
     file_path = f'kazan/{category_id}.csv'
     try:
-        driver.get(
-            f"https://kazanexpress.ru/category{category_id}?filters=filter%3DRV-0%3A0~1000%26")
-    except Exception as e:
-        print(f"Web-page opening: {e} in {category_id}")
-        continue
-    any_row = False
-    try:
         if os.path.exists(file_path):
             continue
         csv_file = open(file_path, 'w', newline='', encoding='utf-8')
@@ -39,6 +32,13 @@ for category_id in categories_file:
     except Exception as e:
         print(f"File opening: {e} in {category_id}")
         continue
+    try:
+        driver.get(
+            f"https://kazanexpress.ru/category{category_id}?filters=filter%3DRV-0%3A0~1000%26")
+    except Exception as e:
+        print(f"Web-page opening: {e} in {category_id}")
+        continue
+    any_row = False
     while True:
         try:
             WebDriverWait(driver, 3).until(
@@ -47,6 +47,9 @@ for category_id in categories_file:
                 time.sleep(0.5 + random())
             if randint(0, 10) == 0:
                 driver.execute_script(f"window.scrollBy(0,{randint(500, 1000)});")
+        except TimeoutException:
+            # nothing fount
+            break
         except Exception as e:
             print(f"Waiting: {e} in {category_id}")
             break
@@ -58,10 +61,22 @@ for category_id in categories_file:
                 price = card.find_element(By.CLASS_NAME, "currency").text
                 link = driver.current_url
                 name = card.find_element(By.CLASS_NAME, "text__product-name").text
-                reviews = hard_to_int(card.find_element(By.CLASS_NAME, "text__quantity-of-reviews").text)
-                bought = hard_to_int(card.find_element(By.CLASS_NAME, "text__product-orders").text)
-                seller = card.find_element(By.CLASS_NAME, "link__product-seller").text
-                stock = hard_to_int(card.find_element(By.CLASS_NAME, "text__product-quantity").text)
+                try:
+                    reviews = hard_to_int(card.find_element(By.CLASS_NAME, "text__quantity-of-reviews").text)
+                except Exception as e:
+                    reviews = 0
+                try:
+                    bought = hard_to_int(card.find_element(By.CLASS_NAME, "text__product-orders").text)
+                except Exception:
+                    bought = 0
+                try:
+                    seller = card.find_element(By.CLASS_NAME, "link__product-seller").text
+                except Exception:
+                    seller = ""
+                try:
+                    stock = hard_to_int(card.find_element(By.CLASS_NAME, "text__product-quantity").text)
+                except Exception:
+                    stock = 0
                 if reviews <= 200 and bought <= 2000 and stock <= 3000:
                     csv_writer.writerow([name, price, reviews, bought, stock, seller, link])
                     any_row = True
@@ -70,8 +85,9 @@ for category_id in categories_file:
             print(f"Parsing: {e} in {category_id}")
             break
         try:
-            item = WebDriverWait(driver, 3).until(
-                expected_conditions.presence_of_element_located((By.CLASS_NAME, "pagination-navigation")))
+            item = driver.find_element(By.CLASS_NAME, "pagination-navigation")
+            if item.get_attribute("class") == "pagination-navigation disabled":
+                break
             item.click()
         except TimeoutException as e:
             break
