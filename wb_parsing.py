@@ -68,6 +68,7 @@ for category_id in categories_file:
                 driver.execute_script("window.history.go(-1)")
         except Exception as e:
             print(f"Parsing: {e} in {category_id}")
+            break
         try:
             item = WebDriverWait(driver, 3).until(
                 expected_conditions.presence_of_element_located((By.CLASS_NAME, "pagination-next")))
