@@ -19,14 +19,14 @@ def hard_to_int(words):
 
 
 driver = webdriver.Chrome(ChromeDriverManager().install())
-categories_file = open("wb_categories", "r")
+categories_file = open("kazan_categories", "r")
 category_index = 0
 for category_id in categories_file:
     category_id = category_id.strip()
-    file_path = f'wb/{category_id.replace("/", "_")}.csv'
+    file_path = f'kazan/{category_id}.csv'
     try:
         driver.get(
-            f"https://www.wildberries.ru/catalog/{category_id}/?priceU=0%3B100000")
+            f"https://kazanexpress.ru/category{category_id}?filters=filter%3DRV-0%3A0~1000%26")
     except Exception as e:
         print(f"Web-page opening: {e} in {category_id}")
         continue
@@ -42,7 +42,7 @@ for category_id in categories_file:
     while True:
         try:
             WebDriverWait(driver, 3).until(
-                expected_conditions.presence_of_element_located((By.CLASS_NAME, "pagination-next")))
+                expected_conditions.presence_of_element_located((By.CLASS_NAME, "tap-noselect")))
             if randint(0, 10) == 0:
                 time.sleep(0.5 + random())
             if randint(0, 10) == 0:
@@ -51,26 +51,26 @@ for category_id in categories_file:
             print(f"Waiting: {e} in {category_id}")
             break
         try:
-            for card in driver.find_elements(By.CLASS_NAME, "product-card__wrapper"):
+            for card in driver.find_elements(By.CLASS_NAME, "tap-noselect"):
                 card.click()
                 WebDriverWait(driver, 3).until(
-                    expected_conditions.presence_of_element_located((By.CLASS_NAME, "price-block__final-price")))
-                price = card.find_element(By.CLASS_NAME, "price-block__final-price").text
+                    expected_conditions.presence_of_element_located((By.CLASS_NAME, "currency")))
+                price = card.find_element(By.CLASS_NAME, "currency").text
                 link = driver.current_url
-                name = card.find_element(By.CLASS_NAME, "same-part-kt__header").text
-                reviews = hard_to_int(card.find_element(By.CLASS_NAME, "same-part-kt__count-review").text)
-                bought = hard_to_int(card.find_element(By.CLASS_NAME, "same-part-kt__order-quantity").text)
-                seller = card.find_element(By.CLASS_NAME, "seller-details__title-wrap").find_element(By.TAG_NAME,
-                                                                                                     "a").text
-                if reviews <= 200 and bought <= 2000:
-                    csv_writer.writerow([name, price, reviews, bought, seller, link])
+                name = card.find_element(By.CLASS_NAME, "text__product-name").text
+                reviews = hard_to_int(card.find_element(By.CLASS_NAME, "text__quantity-of-reviews").text)
+                bought = hard_to_int(card.find_element(By.CLASS_NAME, "text__product-orders").text)
+                seller = card.find_element(By.CLASS_NAME, "link__product-seller").text
+                stock = hard_to_int(card.find_element(By.CLASS_NAME, "text__product-quantity").text)
+                if reviews <= 200 and bought <= 2000 and stock <= 3000:
+                    csv_writer.writerow([name, price, reviews, bought, stock, seller, link])
                     any_row = True
                 driver.execute_script("window.history.go(-1)")
         except Exception as e:
             print(f"Parsing: {e} in {category_id}")
         try:
             item = WebDriverWait(driver, 3).until(
-                expected_conditions.presence_of_element_located((By.CLASS_NAME, "pagination-next")))
+                expected_conditions.presence_of_element_located((By.CLASS_NAME, "pagination-navigation")))
             item.click()
         except TimeoutException as e:
             break

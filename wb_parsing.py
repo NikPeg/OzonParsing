@@ -42,7 +42,7 @@ for category_id in categories_file:
     while True:
         try:
             WebDriverWait(driver, 3).until(
-                expected_conditions.presence_of_element_located((By.CLASS_NAME, "pagination-next")))
+                expected_conditions.presence_of_element_located((By.CLASS_NAME, "product-card__wrapper")))
             if randint(0, 10) == 0:
                 time.sleep(0.5 + random())
             if randint(0, 10) == 0:
