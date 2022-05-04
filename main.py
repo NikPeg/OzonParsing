@@ -34,9 +34,10 @@ for category_id in categories_file:
         print(f"Web-page opening: {e} in {category_id}")
         continue
     any_row = False
+    page_index = 1
     while True:
         try:
-            WebDriverWait(driver, 3).until(expected_conditions.presence_of_element_located((By.CLASS_NAME, "ui-n7")))
+            WebDriverWait(driver, 1).until(expected_conditions.presence_of_element_located((By.CLASS_NAME, "ui-n7")))
             # if randint(0, 10) == 0:
             #     time.sleep(0.5 + random())
             # if randint(0, 10) == 0:
@@ -85,9 +86,9 @@ for category_id in categories_file:
             print(f"Parsing: {e} in {category_id}")
             break
         try:
-            item = WebDriverWait(driver, 3).until(
-                expected_conditions.presence_of_element_located((By.CLASS_NAME, "sy2")))
-            item.click()
+            page_index += 1
+            driver.get(
+                f"https://www.ozon.ru/category/{category_id}/?page={page_index}&price=0.000%3B1000.000&reviews_count=0.000%3B200.000")
         except TimeoutException as e:
             break
         except Exception as e:
