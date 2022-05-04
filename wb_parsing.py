@@ -43,10 +43,10 @@ for category_id in categories_file:
         try:
             WebDriverWait(driver, 3).until(
                 expected_conditions.presence_of_element_located((By.CLASS_NAME, "product-card__wrapper")))
-            if randint(0, 10) == 0:
-                time.sleep(0.5 + random())
-            if randint(0, 10) == 0:
-                driver.execute_script(f"window.scrollBy(0,{randint(500, 1000)});")
+            # if randint(0, 10) == 0:
+            #     time.sleep(0.5 + random())
+            # if randint(0, 10) == 0:
+            #     driver.execute_script(f"window.scrollBy(0,{randint(500, 1000)});")
         except Exception as e:
             print(f"Waiting: {e} in {category_id}")
             break
