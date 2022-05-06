@@ -50,7 +50,7 @@ for category_id in categories_file:
             break
         try:
             for card in driver.find_elements(By.CLASS_NAME, "i3p"):
-                price = card.find_element(By.CLASS_NAME, "ui-s2").find_element(By.CLASS_NAME, "ui-s5").text
+                price = card.find_element(By.CLASS_NAME, "ui-s5").text
                 link = card.find_element(By.CLASS_NAME, "tile-hover-target").get_attribute("href")
                 name = card.find_element(By.CLASS_NAME, "tile-hover-target").find_element(By.CLASS_NAME, "de0").text
                 try:
@@ -64,8 +64,30 @@ for category_id in categories_file:
                     seller = "null"
                 csv_writer.writerow([name, str(price), reviews, seller, link])
                 any_row = True
+        except Exception as e:
+            try:
+                for card in driver.find_elements(By.CLASS_NAME, "iq6"):
+                    price = card.find_element(By.CLASS_NAME, "ui-s5").text
+                    link = card.find_element(By.CLASS_NAME, "tile-hover-target").get_attribute("href")
+                    try:
+                        reviews = card.find_element(By.CLASS_NAME, "yc5").text
+                    except Exception as e:
+                        reviews = 0
+                    name = card.find_element(By.CLASS_NAME, "i7q").find_element(By.CLASS_NAME, "tile-hover-target").find_element(By.TAG_NAME, "span").text
+                    try:
+                        seller = \
+                            card.find_element(By.CLASS_NAME, "i7q").find_element(By.CLASS_NAME, "qi0").find_element(By.CLASS_NAME, "de0").find_elements(
+                                By.TAG_NAME, "span")[-1].text
+                    except Exception as e:
+                        seller = "null"
+                    csv_writer.writerow([name, str(price), reviews, seller, link])
+                    any_row = True
+            except Exception as e:
+                print(f"Parsing: {e} in {category_id}")
+                break
+        try:
             for card in driver.find_elements(By.CLASS_NAME, "p3i"):
-                price = card.find_element(By.CLASS_NAME, "p4i").find_element(By.CLASS_NAME, "ui-s5").text
+                price = card.find_element(By.CLASS_NAME, "ui-s5").text
                 link = card.find_element(By.CLASS_NAME, "tile-hover-target").get_attribute("href")
                 try:
                     reviews = card.find_element(By.CLASS_NAME, "yc5").text
@@ -75,9 +97,10 @@ for category_id in categories_file:
                     By.CLASS_NAME, "tile-hover-target").find_element(By.CLASS_NAME, "de0").text
                 try:
                     seller = \
-                    card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_elements(By.TAG_NAME,
-                                                                                                             "span")[
-                        -1].text
+                        card.find_element(By.CLASS_NAME, "io8").find_element(By.CLASS_NAME, "de0").find_elements(
+                            By.TAG_NAME,
+                            "span")[
+                            -1].text
                 except Exception as e:
                     seller = "null"
                 csv_writer.writerow([name, str(price), reviews, seller, link])
